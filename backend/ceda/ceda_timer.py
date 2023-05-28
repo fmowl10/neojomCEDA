@@ -1,7 +1,16 @@
 from time import time
+import enum
 import asyncio
 
+class TimerState(enum.Enum):
+    READY=0
+    RUNNING=1
+    PAUSED=2
+    STOPPED=3
+
 class Timer:
+    """타이머
+    """
     def __init__(self) -> None:
         self.duration = 0.0
         self.remain = 0.0
@@ -54,12 +63,24 @@ class Timer:
         self._paused = False
     
     async def set_duration(self, duration: float):
+        """타이머 시간 설정
+
+        Args:
+            duration (float): 설정할 타이머 시간
+        """
         self.duration = duration
     
-    async def get_state(self):
+    async def get_state(self) -> TimerState:
+        """현재 타이머 상태
+
+        Returns:
+            TimerState: 타이머 상태
+        """
         if self.finished:
-            return "finished"
+            return TimerState.READY
         elif self._paused:
-            return "paused"
+            return TimerState.PAUSED
+        elif self._stop:
+            return TimerState.STOPPED
         else:
-            return "running"
+            return TimerState.RUNNING
