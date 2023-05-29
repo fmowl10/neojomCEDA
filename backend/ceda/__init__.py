@@ -1,7 +1,9 @@
 # ceda backend server package
 
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 import ceda.room as room
+import ceda.user as user
+import ceda.ceda_timer as ceda_timer
 
 app = FastAPI()
 room_manager = room.RoomManager()
@@ -12,6 +14,8 @@ async def create_room(topic:str):
         생성된 방 번호와, MODERATOR의 UUID 보내줌
     """
     room_id, moderator_uuid = await room_manager.create_room(topic)
+    room = await room_manager.get_room(room_id)
+    await room.timer.set_duration(room.state_generator.current_state.time_limit)
     return {"room_id": room_id, "uuid": moderator_uuid}
 
 @app.get("/{room_id}/join")
@@ -23,8 +27,13 @@ async def join_room(room_id: int, role: str):
 
     생성된 사용자 UUID 반환
     """
-    return {"uuid": "UUID"}
-    pass
+    try:
+        room = await room_manager.get_room(room_id)
+        uuid = await room.join(user.Role(role.upper))
+        return {"uuid": uuid}
+    except Exception as e:
+        print(e)
+        raise HTTPException(409, f"{e}")
 
 @app.get("/{room_id}/state")
 async def room_state(room_id: int):
@@ -40,7 +49,9 @@ async def room_state(room_id: int):
     }
     """
     # 활동하는사람, 단계, 타이머 남은시간
-    return {}
+    room = await room_manager.get_room(room_id)
+    state = await room.current_state()
+    return state
 
 @app.get("/{room_id}/break_time")
 async def insert_breaktime(room_id: int, duration:int, uuid:str):
@@ -67,7 +78,9 @@ async def next(room_id: int, uuid: str):
         "result" : "ok"
     }
     """
-    pass
+    room = await room_manager.get_room(room_id)
+    await room.next_state()
+    return {"result": "ok"}
 
 @app.get("/{room_id}/prev")
 async def prev(room_id: int, uuid: str):
@@ -79,7 +92,9 @@ async def prev(room_id: int, uuid: str):
         "result" : "ok"
     }
     """
-    pass
+    room = await room_manager.get_room(room_id)
+    await room.prev_state()
+    return {"result": "ok"}
 
 
 @app.get("/{room_id}/start")
@@ -92,7 +107,13 @@ async def start(room_id: int, uuid: str, reset: bool = False):
         "result": "ok"
     }
     """
-    pass
+    room = await room_manager.get_room(room_id)
+    if await room.timer.get_state() == ceda_timer.TimerState.PAUSED and not reset:
+        await room.timer.resume_timer()
+    else:
+        await room.timer.set_duration(room.state_generator.current_state.time_limit)
+        await room.timer.start_timer()
+    return {"result": "ok"}
 
 @app.get("/{room_id}/pause")
 async def pause(room_id: int, uuid: str):
@@ -104,17 +125,21 @@ async def pause(room_id: int, uuid: str):
         "result": "ok"
     }
     """
-    pass
+    room = await room_manager.get_room(room_id)
+    await room.timer.pause_timer()
+    return {"result": "ok"}
 
 @app.get("/{room_id}/restart")
 async def restart(room_id: int, uuid: str):
     """
     /{room_id}/restart?uuid=
     """
-    pass
+    room = await room_manager.get_room(room_id)
+    await room.timer.stop_timer()
+    return {"result": "ok"}
 
 @app.get("/{room_id}/poll")
-async def poll(room_id: int, positive: bool):
+async def poll(room_id: int, uuid: str, positive: bool):
     """
     /{user_id}/poll?uuid=str&positive=bool
     차례를 이전으로 넘깁니다.
@@ -123,7 +148,9 @@ async def poll(room_id: int, positive: bool):
         "result" : "ok"
     }
     """
-    pass
+    room = await room_manager.get_room(room_id)
+    room.vote(uuid, user.Role.POSITIVE_SPEAKER1 if positive else user.Role.NEGATIVE_SPEAKER1)
+    return {"result" : "ok"}
 
 @app.get("/{room_id}/poll-result")
 async def poll(room_id: int):
@@ -136,4 +163,5 @@ async def poll(room_id: int):
         "negative" : N
     }
     """
-    pass
+    room = await room_manager.get_room(room_id)
+    return await room.count_vote()

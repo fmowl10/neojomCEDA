@@ -53,6 +53,7 @@ class Timer:
         if self._timer_task is not None:
             await self._timer_task
             self._timer_task = None
+        self.remain = self.duration
     
     async def pause_timer(self):
         """타이머 일시정지"""
@@ -69,6 +70,7 @@ class Timer:
             duration (float): 설정할 타이머 시간
         """
         self.duration = duration
+        self.remain = self.duration
     
     async def get_state(self) -> TimerState:
         """현재 타이머 상태

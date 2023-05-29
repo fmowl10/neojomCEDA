@@ -13,57 +13,59 @@ class State:
         self._kind: str = kind
     
     @property
-    def role(self):
-        return self._role
+    def arguer(self) -> user.Role:
+        return self._arguer
+
+    @property
+    def defender(self) -> user.Role:
+        return self._defender
     
     @property
-    def time_limit(self):
+    def time_limit(self) -> float:
         return self._time_limit
     
     @property
-    def kind(self):
+    def kind(self) -> str:
         return self._kind
 
 
-class StateGenerator(Generator, AsyncGenerator):
+class StateGenerator:
     """토론 진행 단계 진행 제너레이터
     """
 
     def __init__(self) -> None:
         self._state_list: list[State] = [
-            State(user.Role.NEGATIVE_SPEAKER1, user.Role.NONE, "입론", 6*60)
+            State(user.Role.NONE, user.Role.NONE, "대기", 60),
+            State(user.Role.POSITIVE_SPEAKER1, user.Role.NONE, "입론", 6*60),
+            State(user.Role.NEGATIVE_SPEAKER2, user.Role.POSITIVE_SPEAKER1, "교차조사", 3*60),
+            State(user.Role.NEGATIVE_SPEAKER1, user.Role.NONE, "입론", 6*60),
+            State(user.Role.POSITIVE_SPEAKER1, user.Role.NEGATIVE_SPEAKER1, "교차조사", 3*60),
+            State(user.Role.POSITIVE_SPEAKER2, user.Role.NONE, "입론", 6*60),
+            State(user.Role.NEGATIVE_SPEAKER1, user.Role.POSITIVE_SPEAKER2, "교차조사", 3*60),
+            State(user.Role.NEGATIVE_SPEAKER2, user.Role.NONE, "입론", 6*60),
+            State(user.Role.POSITIVE_SPEAKER2, user.Role.NEGATIVE_SPEAKER2, "교차조사", 3*60),
+            State(user.Role.NEGATIVE_SPEAKER1, user.Role.NONE, "반론", 4*60),
+            State(user.Role.POSITIVE_SPEAKER1, user.Role.NONE, "반론", 4*60),
+            State(user.Role.NEGATIVE_SPEAKER2, user.Role.NONE, "반론", 4*60),
+            State(user.Role.POSITIVE_SPEAKER2, user.Role.NONE, "반론", 4*60),
         ] # TODO: fill State http://www.realdebate.co.kr/ceda%ED%86%A0%EB%A1%A0-%ED%98%95%EC%8B%9D/
         self._current = 0
-
-    def __iter__(self) -> Generator:
-        return self
-    
-    def __next__(self) -> Any:
-        if self._current >= len(self._state_list):
-            raise StopIteration
-        ret = self._state_list[self._current]
-        self._current+=1
-        return ret
-
-    async def __aiter__(self) -> AsyncIterator:
-        return self
-    
-    async def __anext__(self) -> Awaitable:
-        if self._current >= len(self._state_list):
-            raise StopIteration
-        ret = self._state_list[self._current]
-        self._current+=1
-        return ret
     
     @property
-    def current_state(self):
+    def current_state(self) -> State:
         return self._state_list[self._current]
 
-    def next_state(self):
+    def next_state(self) -> None:
         self._current += 1
+        if self._current >= len(self._state_list):
+            raise IndexError("State Out of index")
+        return self.current_state
     
-    def prev_state(self):
+    def prev_state(self) -> None:
         self._current -= 1
+        if self._current < 0:
+            raise IndexError("State Out of index")
+        return self.current_state
         
-    def insert_breaktime(self, duration:float):
-        self._state_list.insert(self._current+1, State(user.Role.NONE, user.Role.NONE, "Break Time", duration))
+    def insert_breaktime(self, duration:float) -> None:
+        self._state_list.insert(self._current+1, State(user.Role.NONE, user.Role.NONE, "휴식", duration))
