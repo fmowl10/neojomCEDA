@@ -1,7 +1,7 @@
 import asyncio
-import user
-import state
-import ceda_timer
+import ceda.user as user
+import ceda.state as state
+import ceda.ceda_timer as ceda_timer
 import time
 
 class RoomManager:

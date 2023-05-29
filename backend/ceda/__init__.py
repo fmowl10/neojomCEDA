@@ -1,7 +1,7 @@
 # ceda backend server package
 
 from fastapi import FastAPI
-import room
+import ceda.room as room
 
 app = FastAPI()
 room_manager = room.RoomManager()

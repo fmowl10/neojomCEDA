@@ -1,6 +1,6 @@
 import asyncio
 from typing import AsyncIterator, Awaitable, Generator, AsyncGenerator, Any
-import user
+import ceda.user as user
 
 class State:
     """토론 진행 상황
@@ -30,8 +30,9 @@ class StateGenerator(Generator, AsyncGenerator):
     """
 
     def __init__(self) -> None:
-        self._state_list: list[State] = [State(user.Role.NEGATIVE_SPEAKER1, user.Role.None, "입론", 6*60), 
-                                         ] # TODO: fill State http://www.realdebate.co.kr/ceda%ED%86%A0%EB%A1%A0-%ED%98%95%EC%8B%9D/
+        self._state_list: list[State] = [
+            State(user.Role.NEGATIVE_SPEAKER1, user.Role.NONE, "입론", 6*60)
+        ] # TODO: fill State http://www.realdebate.co.kr/ceda%ED%86%A0%EB%A1%A0-%ED%98%95%EC%8B%9D/
         self._current = 0
 
     def __iter__(self) -> Generator:
