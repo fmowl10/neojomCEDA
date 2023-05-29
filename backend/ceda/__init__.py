@@ -1,11 +1,18 @@
 # ceda backend server package
 
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 import ceda.room as room
 import ceda.user as user
 import ceda.ceda_timer as ceda_timer
 
 app = FastAPI()
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"]
+)
 room_manager = room.RoomManager()
 
 @app.get("/create")
