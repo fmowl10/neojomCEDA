@@ -1,5 +1,5 @@
 class User {
-  String roomId;
+  int roomId;
   String role;
   String uuid;
 

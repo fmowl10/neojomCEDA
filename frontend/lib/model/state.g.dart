@@ -7,15 +7,19 @@ part of 'state.dart';
 // **************************************************************************
 
 State _$StateFromJson(Map<String, dynamic> json) => State(
+      json['arguer'] as String,
+      json['defender'] as String,
       json['kind'] as String,
-      json['timeLimit'] as int,
-      arguer: json['arguer'] as String?,
-      defender: json['defender'] as String?,
+      json['time_Left'] as int,
+      json['timer_state'] as String,
+      json['is_finished'] as bool,
     );
 
 Map<String, dynamic> _$StateToJson(State instance) => <String, dynamic>{
       'arguer': instance.arguer,
       'defender': instance.defender,
       'kind': instance.kind,
-      'timeLimit': instance.timeLimit,
+      'time_Left': instance.timeLeft,
+      'timer_state': instance.timerState,
+      'is_finished': instance.isFinished,
     };

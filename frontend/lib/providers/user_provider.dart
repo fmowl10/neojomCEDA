@@ -5,15 +5,17 @@ import 'package:http/http.dart' as http;
 import 'dart:convert' as convert;
 
 class UserProvider extends ChangeNotifier {
-  final endPoint = "";
+  final endPoint = "ceda.quokkaandco.dev";
   final User _user;
-  StateModel.State _currentState = StateModel.State("", 0);
+  StateModel.State? _currentState;
+
+  bool isVoted = false;
 
   UserProvider(this._user);
 
-  String get roomNumber => _user.roomId;
-  set roomNumber(String roomNumber) {
-    _user.roomId = roomNumber;
+  int get roomId => _user.roomId;
+  set roomId(int roomId) {
+    _user.roomId = roomId;
     notifyListeners();
   }
 
@@ -28,15 +30,31 @@ class UserProvider extends ChangeNotifier {
     _user.uuid = uuid;
   }
 
-  StateModel.State get currentState => _currentState;
+  StateModel.State? get currentState => _currentState;
 
-  void fetchState() async {
-    var url = Uri.http(endPoint, "${_user.roomId}/state");
+  Future<void> fetchState() async {
+    var url = Uri.http(endPoint, "$roomId/state");
     var response = await http.get(url);
     if (response.statusCode == 200) {
       var jsonResponse = convert.jsonDecode(response.body) as StateModel.State;
       _currentState = jsonResponse;
       notifyListeners();
+    }
+  }
+
+  Future<void> poll() async {
+    if (role != 'LISTNER') {
+      return;
+    }
+    final param = {"positive": false};
+    final url = Uri.https(endPoint, "$roomId/poll", param);
+    var response = await http.get(url);
+    if (response.statusCode == 200) {
+      var jsonResponse = convert.jsonDecode(response.body);
+      if (jsonResponse['result'] == 'ok') {
+        isVoted = true;
+        notifyListeners();
+      }
     }
   }
 }

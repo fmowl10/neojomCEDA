@@ -1,12 +1,26 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:neojom_ceda/moderator_page.dart';
 import 'package:neojom_ceda/user_page.dart';
 import 'package:http/http.dart' as http;
+import 'package:provider/provider.dart';
+import 'package:neojom_ceda/model/user.dart';
+import 'package:neojom_ceda/providers/moderator_provider.dart';
+import 'package:neojom_ceda/providers/user_provider.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => UserProvider(User(0, "", ""))),
+        ChangeNotifierProvider(
+            create: (_) => ModeratorProvider(User(0, "", "")))
+      ],
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -36,7 +50,7 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  String roomId = "";
+  int roomId = 0;
   String topic = "";
   final roleItems = [
     "POSITIVE_SPEAKER1",
@@ -70,11 +84,21 @@ class _MyHomePageState extends State<MyHomePage> {
                       child: Column(
                         children: [
                           const Text("사회자"),
-                          SizedBox(width: 200, child: TextField()),
+                          SizedBox(
+                              width: 200,
+                              child: TextField(
+                                  onChanged: (value) => setState(() {
+                                        topic = value;
+                                      }))),
                           TextButton(
                               onPressed: () {
-                                Navigator.of(context).push(MaterialPageRoute(
-                                    builder: (context) => UserPage(roomId)));
+                                create().then((value) {
+                                  Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) =>
+                                              ModeratorPage(roomId, uuid)));
+                                });
                               },
                               child: const Text("방만들기"))
                         ],
@@ -99,21 +123,27 @@ class _MyHomePageState extends State<MyHomePage> {
                               decoration: const InputDecoration(
                                   border: OutlineInputBorder(),
                                   hintText: "input room id"),
+                              keyboardType: TextInputType.number,
+                              inputFormatters: [
+                                FilteringTextInputFormatter.digitsOnly
+                              ],
                               onChanged: (inputed) => setState(() {
-                                roomId = inputed;
+                                roomId = int.parse(inputed);
                               }),
                             ),
                           ),
                           TextButton(
                               onPressed: () {
-                                if (roomId.isEmpty) {
+                                if (roomId == 0) {
                                   return;
                                 }
-                                Navigator.of(context).push(MaterialPageRoute(
-                                  builder: (context) {
-                                    return ModeratorPage(roomId);
-                                  },
-                                ));
+                                join().then((value) {
+                                  Navigator.of(context).push(MaterialPageRoute(
+                                    builder: (context) {
+                                      return UserPage(roomId, uuid, role);
+                                    },
+                                  ));
+                                });
                               },
                               child: const Text("입장"))
                         ],
@@ -125,22 +155,26 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  Future join() async {
+  Future<void> join() async {
     final param = {"role": role};
-    final url = Uri.http("/", "$roomId", param);
+    final url = Uri.https("ceda.quokkaandco.dev", '$roomId/join', param);
     final response =
         await http.get(url, headers: {"Content-Type": "application/json"});
-    var jsonResponse = await jsonDecode(response.body);
+    var jsonResponse = jsonDecode(response.body);
 
     uuid = jsonResponse['uuid'];
   }
 
-  Future create() async {
+  // Future를
+  Future<void> create() async {
     final param = {"topic": topic};
-    final url = Uri.http("/", "create", param);
-    final response =
-        await http.get(url, headers: {"Content-Type": "application/json"});
-    var jsonResponse = await jsonDecode(response.body);
+    final url = Uri.https("ceda.quokkaandco.dev", "create", param);
+    final response = await http.get(url, headers: {
+      "Content-Type": "application/json",
+      "Access-Control-Allow-Origin": "*",
+      "Accept": "*/*"
+    });
+    var jsonResponse = jsonDecode(utf8.decode(response.bodyBytes));
 
     uuid = jsonResponse['uuid'];
     roomId = jsonResponse['room_id'];
