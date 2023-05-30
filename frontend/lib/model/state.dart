@@ -7,7 +7,7 @@ class State {
   final String arguer;
   final String defender;
   final String kind;
-  @JsonKey(name: "time_Left")
+  @JsonKey(name: "time_left")
   final int timeLeft;
   @JsonKey(name: "timer_state")
   final String timerState;

@@ -26,6 +26,12 @@ class ModeratorPage extends StatelessWidget {
             children: [
               Text('방번호 $roomId'),
               StateComponent(),
+              ElevatedButton(
+                  onPressed: () async {
+                    await Provider.of<ModeratorProvider>(context, listen: false)
+                        .fetchState();
+                  },
+                  child: Text("dddd"))
             ],
           )),
         ));

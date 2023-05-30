@@ -3,11 +3,12 @@ import 'package:neojom_ceda/model/user.dart';
 import 'package:neojom_ceda/model/state.dart' as StateModel;
 import 'package:http/http.dart' as http;
 import 'dart:convert' as convert;
+import 'dart:convert';
 
 class UserProvider extends ChangeNotifier {
   final endPoint = "ceda.quokkaandco.dev";
   final User _user;
-  StateModel.State? _currentState;
+  StateModel.State _currentState = StateModel.State("", "", "", 0, "", false);
 
   bool isVoted = false;
 
@@ -20,7 +21,7 @@ class UserProvider extends ChangeNotifier {
   }
 
   String get role => _user.role;
-  set role(String role) {
+  void setRole(String role) {
     _user.role = role;
     notifyListeners();
   }
@@ -30,13 +31,14 @@ class UserProvider extends ChangeNotifier {
     _user.uuid = uuid;
   }
 
-  StateModel.State? get currentState => _currentState;
+  StateModel.State get currentState => _currentState;
 
   Future<void> fetchState() async {
     var url = Uri.http(endPoint, "$roomId/state");
     var response = await http.get(url);
     if (response.statusCode == 200) {
-      var jsonResponse = convert.jsonDecode(response.body) as StateModel.State;
+      var jsonResponse = StateModel.State.fromJson(
+          json.decode(utf8.decode(response.bodyBytes)));
       _currentState = jsonResponse;
       notifyListeners();
     }

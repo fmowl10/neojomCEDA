@@ -160,20 +160,19 @@ class _MyHomePageState extends State<MyHomePage> {
     final url = Uri.https("ceda.quokkaandco.dev", '$roomId/join', param);
     final response =
         await http.get(url, headers: {"Content-Type": "application/json"});
-    var jsonResponse = jsonDecode(response.body);
+    if (response.statusCode == 200) {
+      var jsonResponse = jsonDecode(response.body);
 
-    uuid = jsonResponse['uuid'];
+      uuid = jsonResponse['uuid'];
+    }
   }
 
   // Future를
   Future<void> create() async {
     final param = {"topic": topic};
     final url = Uri.https("ceda.quokkaandco.dev", "create", param);
-    final response = await http.get(url, headers: {
-      "Content-Type": "application/json",
-      "Access-Control-Allow-Origin": "*",
-      "Accept": "*/*"
-    });
+    final response =
+        await http.get(url, headers: {"Content-Type": "application/json"});
     var jsonResponse = jsonDecode(utf8.decode(response.bodyBytes));
 
     uuid = jsonResponse['uuid'];
