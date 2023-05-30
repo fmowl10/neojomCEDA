@@ -96,6 +96,7 @@ class Room:
 
     async def next_state(self):
         new_state: state.State = self.state_generator.next_state()
+        await self.timer.stop_timer()
         await self.timer.set_duration(new_state.time_limit)
 
     async def prev_state(self):

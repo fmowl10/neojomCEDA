@@ -15,8 +15,9 @@ app.add_middleware(
 )
 room_manager = room.RoomManager()
 
+
 @app.get("/create")
-async def create_room(topic:str):
+async def create_room(topic: str):
     """토론방 생성
         생성된 방 번호와, MODERATOR의 UUID 보내줌
     """
@@ -24,6 +25,7 @@ async def create_room(topic:str):
     room = await room_manager.get_room(room_id)
     await room.timer.set_duration(room.state_generator.current_state.time_limit)
     return {"room_id": room_id, "uuid": moderator_uuid}
+
 
 @app.get("/{room_id}/join")
 async def join_room(room_id: int, role: str):
@@ -36,11 +38,12 @@ async def join_room(room_id: int, role: str):
     """
     try:
         room = await room_manager.get_room(room_id)
-        uuid = await room.join(user.Role(role.upper))
+        uuid = await room.join(user.Role[role.upper()])
         return {"uuid": uuid}
     except Exception as e:
         print(e)
         raise HTTPException(409, f"{e}")
+
 
 @app.get("/{room_id}/state")
 async def room_state(room_id: int):
@@ -60,8 +63,9 @@ async def room_state(room_id: int):
     state = await room.current_state()
     return state
 
+
 @app.get("/{room_id}/break_time")
-async def insert_breaktime(room_id: int, duration:int, uuid:str):
+async def insert_breaktime(room_id: int, duration: int, uuid: str):
     """
     /{room_id}/state?uuid= &duration=
     쉬는 시간을 추가하는 명령
@@ -73,7 +77,7 @@ async def insert_breaktime(room_id: int, duration:int, uuid:str):
     room = await room_manager.get_room(room_id)
     room.state_generator.insert_breaktime(duration)
     return {"result": "ok"}
-    
+
 
 @app.get("/{room_id}/next")
 async def next(room_id: int, uuid: str):
@@ -86,8 +90,12 @@ async def next(room_id: int, uuid: str):
     }
     """
     room = await room_manager.get_room(room_id)
-    await room.next_state()
+    try:
+        await room.next_state()
+    except Exception as e:
+        raise HTTPException(406, f"{e}")
     return {"result": "ok"}
+
 
 @app.get("/{room_id}/prev")
 async def prev(room_id: int, uuid: str):
@@ -100,7 +108,10 @@ async def prev(room_id: int, uuid: str):
     }
     """
     room = await room_manager.get_room(room_id)
-    await room.prev_state()
+    try:
+        await room.prev_state()
+    except Exception as e:
+        raise HTTPException(406, f"{e}")
     return {"result": "ok"}
 
 
@@ -122,6 +133,7 @@ async def start(room_id: int, uuid: str, reset: bool = False):
         await room.timer.start_timer()
     return {"result": "ok"}
 
+
 @app.get("/{room_id}/pause")
 async def pause(room_id: int, uuid: str):
     """
@@ -136,6 +148,7 @@ async def pause(room_id: int, uuid: str):
     await room.timer.pause_timer()
     return {"result": "ok"}
 
+
 @app.get("/{room_id}/restart")
 async def restart(room_id: int, uuid: str):
     """
@@ -144,6 +157,7 @@ async def restart(room_id: int, uuid: str):
     room = await room_manager.get_room(room_id)
     await room.timer.stop_timer()
     return {"result": "ok"}
+
 
 @app.get("/{room_id}/poll")
 async def poll(room_id: int, uuid: str, positive: bool):
@@ -156,8 +170,9 @@ async def poll(room_id: int, uuid: str, positive: bool):
     }
     """
     room = await room_manager.get_room(room_id)
-    room.vote(uuid, user.Role.POSITIVE_SPEAKER1 if positive else user.Role.NEGATIVE_SPEAKER1)
-    return {"result" : "ok"}
+    await room.vote(uuid, user.Role.POSITIVE_SPEAKER1 if positive else user.Role.NEGATIVE_SPEAKER1)
+    return {"result": "ok"}
+
 
 @app.get("/{room_id}/poll-result")
 async def poll(room_id: int):

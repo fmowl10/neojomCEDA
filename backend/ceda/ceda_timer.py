@@ -26,9 +26,12 @@ class Timer:
         """
         current_time = time()
         while not self._stop and self.remain > 0:
-            asyncio.sleep(0.1)
+            await asyncio.sleep(0.1)
             if not self._paused:
                 self.remain -= time() - current_time
+                if self.remain < 0:
+                    self.remain = 0
+                    break
             current_time = time()
         self.finished = True
 

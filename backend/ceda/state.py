@@ -48,6 +48,7 @@ class StateGenerator:
             State(user.Role.POSITIVE_SPEAKER1, user.Role.NONE, "반론", 4*60),
             State(user.Role.NEGATIVE_SPEAKER2, user.Role.NONE, "반론", 4*60),
             State(user.Role.POSITIVE_SPEAKER2, user.Role.NONE, "반론", 4*60),
+            State(user.Role.NONE, user.Role.NONE, "투표", 2*60)
         ] # TODO: fill State http://www.realdebate.co.kr/ceda%ED%86%A0%EB%A1%A0-%ED%98%95%EC%8B%9D/
         self._current = 0
     
@@ -56,15 +57,15 @@ class StateGenerator:
         return self._state_list[self._current]
 
     def next_state(self) -> None:
-        self._current += 1
-        if self._current >= len(self._state_list):
+        if self._current+1 >= len(self._state_list):
             raise IndexError("State Out of index")
+        self._current += 1
         return self.current_state
     
     def prev_state(self) -> None:
-        self._current -= 1
-        if self._current < 0:
+        if self._current-1 < 0:
             raise IndexError("State Out of index")
+        self._current -= 1
         return self.current_state
         
     def insert_breaktime(self, duration:float) -> None:
