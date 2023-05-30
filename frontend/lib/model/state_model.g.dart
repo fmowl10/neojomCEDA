@@ -1,21 +1,22 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'state.dart';
+part of 'state_model.dart';
 
 // **************************************************************************
 // JsonSerializableGenerator
 // **************************************************************************
 
-State _$StateFromJson(Map<String, dynamic> json) => State(
+StateModel _$StateModelFromJson(Map<String, dynamic> json) => StateModel(
       json['arguer'] as String,
       json['defender'] as String,
       json['kind'] as String,
-      json['time_left'] as int,
+      (json['time_left'] as num).toDouble(),
       json['timer_state'] as String,
       json['is_finished'] as bool,
     );
 
-Map<String, dynamic> _$StateToJson(State instance) => <String, dynamic>{
+Map<String, dynamic> _$StateModelToJson(StateModel instance) =>
+    <String, dynamic>{
       'arguer': instance.arguer,
       'defender': instance.defender,
       'kind': instance.kind,

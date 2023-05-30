@@ -2,24 +2,15 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:neojom_ceda/model/moderator.dart';
 import 'package:neojom_ceda/moderator_page.dart';
 import 'package:neojom_ceda/user_page.dart';
 import 'package:http/http.dart' as http;
-import 'package:provider/provider.dart';
 import 'package:neojom_ceda/model/user.dart';
-import 'package:neojom_ceda/providers/moderator_provider.dart';
-import 'package:neojom_ceda/providers/user_provider.dart';
 
 void main() {
   runApp(
-    MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (_) => UserProvider(User(0, "", ""))),
-        ChangeNotifierProvider(
-            create: (_) => ModeratorProvider(User(0, "", "")))
-      ],
-      child: const MyApp(),
-    ),
+    const MyApp(),
   );
 }
 
@@ -96,8 +87,9 @@ class _MyHomePageState extends State<MyHomePage> {
                                   Navigator.push(
                                       context,
                                       MaterialPageRoute(
-                                          builder: (context) =>
-                                              ModeratorPage(roomId, uuid)));
+                                          builder: (context) => ModeratorPage(
+                                              Moderator(
+                                                  roomId, "MODERATOR", uuid))));
                                 });
                               },
                               child: const Text("방만들기"))
@@ -140,7 +132,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                 join().then((value) {
                                   Navigator.of(context).push(MaterialPageRoute(
                                     builder: (context) {
-                                      return UserPage(roomId, uuid, role);
+                                      return UserPage(User(roomId, role, uuid));
                                     },
                                   ));
                                 });
