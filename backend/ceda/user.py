@@ -44,6 +44,7 @@ class Listener(User):
         """
         if vote_to not in  [Role.POSITIVE_SPEAKER1, Role.NEGATIVE_SPEAKER1]:
             raise ValueError("Can only vote to positive or negative")
+        self.voted_side = vote_to
 
 
 class PositiveSpeaker1(User):
