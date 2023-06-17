@@ -1,9 +1,9 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:neojom_ceda/component/state_model_component.dart';
 import 'package:neojom_ceda/model/moderator.dart';
 import 'package:neojom_ceda/model/state_model.dart';
-import 'dart:async';
 
 import 'package:neojom_ceda/poll_result_page.dart';
 

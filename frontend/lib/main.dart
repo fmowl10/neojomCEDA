@@ -1,16 +1,23 @@
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:neojom_ceda/model/moderator.dart';
+import 'package:http/http.dart' as http;
+import 'package:provider/provider.dart';
 import 'package:neojom_ceda/moderator_page.dart';
 import 'package:neojom_ceda/user_page.dart';
-import 'package:http/http.dart' as http;
+import 'package:neojom_ceda/provider/neojom_ceda_provider.dart';
+import 'package:neojom_ceda/model/moderator.dart';
 import 'package:neojom_ceda/model/user.dart';
+import 'package:neojom_ceda/constants.dart';
 
 void main() {
   runApp(
-    const MyApp(),
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => NeojomCEDAProvider()),
+      ],
+      child: const MyApp(),
+    ),
   );
 }
 
@@ -43,14 +50,8 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   int roomId = 0;
   String topic = "";
-  final roleItems = [
-    "POSITIVE_SPEAKER1",
-    "POSITIVE_SPEAKER2",
-    "NEGATIVE_SPEAKER1",
-    "NEGATIVE_SPEAKER2",
-    "LISTENER"
-  ];
-  String role = "LISTENER";
+  final roleItems = userRoles.values;
+  String role = "객원";
   bool isFetching = false;
   String uuid = "";
 
@@ -132,7 +133,12 @@ class _MyHomePageState extends State<MyHomePage> {
                                 join().then((value) {
                                   Navigator.of(context).push(MaterialPageRoute(
                                     builder: (context) {
-                                      return UserPage(User(roomId, role, uuid));
+                                      var roleENG = userRoles.keys.firstWhere(
+                                          (element) =>
+                                              userRoles[element] == role,
+                                          orElse: () => '객원');
+                                      return UserPage(
+                                          User(roomId, roleENG, uuid));
                                     },
                                   ));
                                 });

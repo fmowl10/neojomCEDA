@@ -1,9 +1,10 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:neojom_ceda/constants.dart';
 import 'package:neojom_ceda/model/user.dart';
 import 'package:neojom_ceda/component/state_model_component.dart';
 import 'package:neojom_ceda/model/state_model.dart';
 import 'package:neojom_ceda/poll_result_page.dart';
-import 'dart:async';
 
 class UserPage extends StatefulWidget {
   final User user;
@@ -37,7 +38,7 @@ class UserPageState extends State<UserPage> {
     return Scaffold(
         appBar: AppBar(
             backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-            title: Text('${user.roomId} 방 역할 : ${user.role}')),
+            title: Text('${userRoles[user.roomId]} 방 역할 : ${user.role}')),
         body: Center(
           child: Column(children: [
             StateModelComponent(currentState),

@@ -1,6 +1,5 @@
-import 'package:http/http.dart' as http;
 import 'dart:convert' as convert;
-import 'dart:convert';
+import 'package:http/http.dart' as http;
 import 'package:neojom_ceda/model/user.dart';
 import 'package:neojom_ceda/model/poll_result.dart';
 
@@ -59,8 +58,8 @@ class Moderator extends User {
       "Content-Type": "application/json",
     });
     if (response.statusCode == 200) {
-      var pollResult =
-          convert.jsonDecode(utf8.decode(response.bodyBytes)) as PollResult;
+      var pollResult = convert
+          .jsonDecode(convert.utf8.decode(response.bodyBytes)) as PollResult;
       return pollResult;
     }
     return null;

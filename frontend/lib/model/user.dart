@@ -1,6 +1,5 @@
-import 'package:http/http.dart' as http;
-import 'dart:convert' as convert;
 import 'dart:convert';
+import 'package:http/http.dart' as http;
 import 'package:neojom_ceda/model/state_model.dart';
 
 class User {
@@ -34,7 +33,7 @@ class User {
     final param = {"positive": positive ? 'true' : 'false', "uuid": uuid};
     final url = Uri.https(endPoint, "$roomId/poll", param);
     print(url);
-    var response =
+    var res =
         await http.get(url, headers: {"Content-Type": "application/json"});
   }
 }

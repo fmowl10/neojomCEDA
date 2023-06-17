@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:neojom_ceda/model/poll_result.dart';
 import 'package:http/http.dart' as http;
-import 'dart:convert' as convert;
 import 'dart:convert';
 
 class PollResultPage extends StatefulWidget {
   final int roomId;
-  PollResultPage(this.roomId);
+  const PollResultPage(this.roomId, {super.key});
 
+  @override
   State<PollResultPage> createState() => PollResultPageState();
 }
 
