@@ -1,16 +1,17 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 import 'package:neojom_ceda/moderator_page.dart';
 import 'package:neojom_ceda/user_page.dart';
 import 'package:neojom_ceda/provider/neojom_ceda_provider.dart';
-import 'package:neojom_ceda/model/moderator.dart';
 import 'package:neojom_ceda/model/user.dart';
 import 'package:neojom_ceda/constants.dart';
 
-void main() {
+void main() async {
+  await dotenv.load(fileName: ".env");
   runApp(
     MultiProvider(
       providers: [
@@ -50,7 +51,7 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   int roomId = 0;
   String topic = "";
-  final roleItems = userRoles.values;
+  final roleItems = userRoles.values.toList().sublist(0, 5);
   String role = "객원";
   bool isFetching = false;
   String uuid = "";
@@ -85,12 +86,16 @@ class _MyHomePageState extends State<MyHomePage> {
                           TextButton(
                               onPressed: () {
                                 create().then((value) {
+                                  context.read<NeojomCEDAProvider>().user =
+                                      User(roomId, "MODERATOR", uuid);
+                                  context
+                                      .read<NeojomCEDAProvider>()
+                                      .startPolling();
                                   Navigator.push(
                                       context,
                                       MaterialPageRoute(
-                                          builder: (context) => ModeratorPage(
-                                              Moderator(
-                                                  roomId, "MODERATOR", uuid))));
+                                          builder: (context) =>
+                                              const ModeratorPage()));
                                 });
                               },
                               child: const Text("방만들기"))
@@ -131,14 +136,17 @@ class _MyHomePageState extends State<MyHomePage> {
                                   return;
                                 }
                                 join().then((value) {
+                                  var roleENG = userRoles.keys.firstWhere(
+                                      (element) => userRoles[element] == role,
+                                      orElse: () => 'LISTENER');
+                                  context.read<NeojomCEDAProvider>().user =
+                                      User(roomId, roleENG, uuid);
+                                  context
+                                      .read<NeojomCEDAProvider>()
+                                      .startPolling();
                                   Navigator.of(context).push(MaterialPageRoute(
                                     builder: (context) {
-                                      var roleENG = userRoles.keys.firstWhere(
-                                          (element) =>
-                                              userRoles[element] == role,
-                                          orElse: () => '객원');
-                                      return UserPage(
-                                          User(roomId, roleENG, uuid));
+                                      return const UserPage();
                                     },
                                   ));
                                 });
@@ -154,8 +162,12 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Future<void> join() async {
-    final param = {"role": role};
-    final url = Uri.https("ceda.quokkaandco.dev", '$roomId/join', param);
+    var roleENG = userRoles.keys.firstWhere(
+        (element) => userRoles[element] == role,
+        orElse: () => 'LISTENER');
+
+    final param = {"role": roleENG};
+    final url = Uri.https(endPoint!, '$roomId/join', param);
     final response =
         await http.get(url, headers: {"Content-Type": "application/json"});
     if (response.statusCode == 200) {
@@ -168,7 +180,7 @@ class _MyHomePageState extends State<MyHomePage> {
   // Future를
   Future<void> create() async {
     final param = {"topic": topic};
-    final url = Uri.https("ceda.quokkaandco.dev", "create", param);
+    final url = Uri.https(endPoint!, "create", param);
     final response =
         await http.get(url, headers: {"Content-Type": "application/json"});
     var jsonResponse = jsonDecode(utf8.decode(response.bodyBytes));

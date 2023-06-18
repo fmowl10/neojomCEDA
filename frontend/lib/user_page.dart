@@ -1,91 +1,53 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:neojom_ceda/constants.dart';
-import 'package:neojom_ceda/model/user.dart';
 import 'package:neojom_ceda/component/state_model_component.dart';
-import 'package:neojom_ceda/model/state_model.dart';
 import 'package:neojom_ceda/poll_result_page.dart';
+import 'package:neojom_ceda/provider/neojom_ceda_provider.dart';
+import 'package:provider/provider.dart';
 
-class UserPage extends StatefulWidget {
-  final User user;
-  const UserPage(this.user, {super.key});
-  @override
-  UserPageState createState() => UserPageState(user);
-}
-
-class UserPageState extends State<UserPage> {
-  StateModel currentState = StateModel("", "", "", 0, "", false);
-  User user;
-
-  UserPageState(this.user);
-
-  late Timer _timer;
-
-  @override
-  void initState() {
-    startPolling();
-    super.initState();
-  }
-
-  void startPolling() {
-    _timer = Timer.periodic(const Duration(seconds: 1), (timer) async {
-      pollingStateModel();
-    });
-  }
-
+class UserPage extends StatelessWidget {
+  const UserPage({super.key});
   @override
   Widget build(BuildContext context) {
+    final user = context.watch<NeojomCEDAProvider>().user;
+    final state = context.watch<NeojomCEDAProvider>().currentState;
+
     return Scaffold(
         appBar: AppBar(
             backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-            title: Text('${userRoles[user.roomId]} 방 역할 : ${user.role}')),
+            title: Text('${user!.roomId} 방 역할 : ${user.role}')),
         body: Center(
           child: Column(children: [
-            StateModelComponent(currentState),
-            if (currentState.kind == '투표' &&
+            const StateModelComponent(),
+            if (context.watch<NeojomCEDAProvider>().isPollEnd)
+              ElevatedButton(
+                  onPressed: () => Navigator.of(context).push(MaterialPageRoute(
+                      builder: (context) => const PollResultPage())),
+                  child: const Text("투표 결과 보기")),
+            if (state.kind == '투표' &&
+                !state.isFinished &&
                 user.role == 'LISTENER' &&
                 !user.isVoted)
               Row(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   ElevatedButton(
                       onPressed: () async {
-                        await widget.user.poll(false);
+                        await context.read<NeojomCEDAProvider>().doPoll(false);
                         user.isVoted = true;
                         user.votedSide = "반대";
                       },
                       child: const Text('반대에 투표')),
                   ElevatedButton(
                       onPressed: () async {
-                        await user.poll(true);
+                        await context.read<NeojomCEDAProvider>().doPoll(true);
                         user.isVoted = true;
                         user.votedSide = "찬성";
                       },
                       child: const Text('찬성에 투표')),
                 ],
               ),
-            Text(user.votedSide)
+            if (user.isVoted) Text("${user.votedSide}에 투표하셨습니다.")
           ]),
         ));
-  }
-
-  void pollingStateModel() {
-    user.fetchState().then(
-      (state) {
-        if (state != null) {
-          if (state.timerState == 'READY' &&
-              state.timeLeft == 0 &&
-              state.kind == '투표') {
-            _timer.cancel();
-            Navigator.of(context).push(MaterialPageRoute(builder: (context) {
-              return PollResultPage(user.roomId);
-            }));
-          } else {
-            setState(() {
-              currentState = state;
-            });
-          }
-        }
-      },
-    );
   }
 }

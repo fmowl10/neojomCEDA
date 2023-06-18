@@ -11,7 +11,9 @@ class NeojomCEDAProvider extends ChangeNotifier {
   User? user;
   StateModel _currentState = StateModel("", "", "", 0, "", false);
   PollResult _pollResult = PollResult(0, 0);
+  bool isPollEnd = false;
   late Timer _timer;
+  final String ENDPOINT = endPoint!;
 
   StateModel get currentState => _currentState;
   PollResult get pollResult => _pollResult;
@@ -36,7 +38,7 @@ class NeojomCEDAProvider extends ChangeNotifier {
   Future<void> fetchStateModel() async {
     if (user == null) throw Exception("blank user");
     var param = {"uuid": user!.uuid};
-    var uri = Uri.https(endPoint, "${user!.roomId}/state", param);
+    var uri = Uri.https(ENDPOINT, "${user!.roomId}/state", param);
     var response = await http.get(uri, headers: defaultHeader);
     if (response.statusCode != 200) throw Exception("fetch error");
 
@@ -44,6 +46,14 @@ class NeojomCEDAProvider extends ChangeNotifier {
         StateModel.fromJson(json.decode(utf8.decode(response.bodyBytes)));
 
     _currentState = jsonResponse;
+
+    if (currentState.kind == "투표" &&
+        currentState.isFinished &&
+        currentState.timeLeft <= 0) {
+      isPollEnd = true;
+      stopPolling();
+      await fetchPollResult();
+    }
     notifyListeners();
   }
 
@@ -55,7 +65,7 @@ class NeojomCEDAProvider extends ChangeNotifier {
       "uuid": user!.uuid
     };
 
-    final uri = Uri.https(endPoint, "${user!.roomId}/poll", param);
+    final uri = Uri.https(ENDPOINT, "${user!.roomId}/poll", param);
     var res = await http.get(uri, headers: defaultHeader);
 
     if (res.statusCode != 200) {
@@ -71,7 +81,7 @@ class NeojomCEDAProvider extends ChangeNotifier {
         .firstWhere((element) => element == selection, orElse: () => '')
         .isEmpty) throw Exception("wrong selection of debate");
     final param = {"uuid": user!.uuid};
-    final uri = Uri.https(endPoint, '${user!.roomId}/$selection', param);
+    final uri = Uri.https(ENDPOINT, '${user!.roomId}/$selection', param);
 
     var res = await http.get(uri, headers: defaultHeader);
 
@@ -80,11 +90,12 @@ class NeojomCEDAProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> giveBreakTime(double breakTime) async {
+  Future<void> giveBreakTime(int breakTime) async {
     if (!isModerator()) throw Exception("only moderator give break time");
 
+    // 초를 받는 시스템
     final param = {"uuid": user!.uuid, "duration": breakTime.toString()};
-    final uri = Uri.https(endPoint, "${user!.roomId}/break_time", param);
+    final uri = Uri.https(ENDPOINT, "${user!.roomId}/break_time", param);
     var res = await http.get(uri, headers: defaultHeader);
 
     if (res.statusCode != 200) {
@@ -94,7 +105,7 @@ class NeojomCEDAProvider extends ChangeNotifier {
 
   Future<void> fetchPollResult() async {
     final param = {"uuid": user!.uuid};
-    final uri = Uri.https(endPoint, "${user!.roomId}/poll-result", param);
+    final uri = Uri.https(ENDPOINT, "${user!.roomId}/poll-result", param);
     var res = await http.get(uri, headers: defaultHeader);
     if (res.statusCode != 200) {
       throw Exception("fetchPollResult error");

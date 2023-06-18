@@ -32,8 +32,6 @@ class User {
 
     final param = {"positive": positive ? 'true' : 'false', "uuid": uuid};
     final url = Uri.https(endPoint, "$roomId/poll", param);
-    print(url);
-    var res =
-        await http.get(url, headers: {"Content-Type": "application/json"});
+    await http.get(url, headers: {"Content-Type": "application/json"});
   }
 }
