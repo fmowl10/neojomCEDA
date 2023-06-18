@@ -10,6 +10,7 @@ class UserPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final user = context.watch<NeojomCEDAProvider>().user;
     final state = context.watch<NeojomCEDAProvider>().currentState;
+    final timeLeft = state.timeLeft.toInt();
 
     return Scaffold(
         appBar: AppBar(
@@ -18,8 +19,22 @@ class UserPage extends StatelessWidget {
         body: Center(
           child: Column(children: [
             const StateModelComponent(),
-            if (user.role == state.arguer) const Text("발언하시면 됩니다."),
-            if (user.role == state.defender) const Text("현재, 방어자이십니다."),
+            if (user.role == state.arguer)
+              const Text(
+                "발언하시면 됩니다.",
+                style: TextStyle(backgroundColor: Colors.yellow),
+              ),
+            if (user.role == state.defender)
+              const Text(
+                "현재, 방어자이십니다.",
+                style: TextStyle(backgroundColor: Colors.yellow),
+              ),
+            if (timeLeft <= 15 && state.timeLeft != 0)
+              Text("$timeLeft초 남았습니다.",
+                  style: TextStyle(
+                      backgroundColor: state.timeLeft.toInt() % 2 == 0
+                          ? Colors.red
+                          : Colors.white)),
             if (context.watch<NeojomCEDAProvider>().isPollEnd)
               ElevatedButton(
                   onPressed: () => Navigator.of(context).push(MaterialPageRoute(
