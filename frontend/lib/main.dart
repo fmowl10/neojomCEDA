@@ -149,6 +149,9 @@ class _MyHomePageState extends State<MyHomePage> {
                                       return const UserPage();
                                     },
                                   ));
+                                }).catchError((_) {
+                                  ScaffoldMessenger.of(context)
+                                      .showSnackBar(kickedSankBar);
                                 });
                               },
                               child: const Text("입장"))
@@ -174,10 +177,11 @@ class _MyHomePageState extends State<MyHomePage> {
       var jsonResponse = jsonDecode(response.body);
 
       uuid = jsonResponse['uuid'];
+    } else if (response.statusCode == 409) {
+      throw Exception("kicked");
     }
   }
 
-  // Future를
   Future<void> create() async {
     final param = {"topic": topic};
     final url = Uri.https(endPoint!, "create", param);

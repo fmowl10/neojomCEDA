@@ -14,8 +14,9 @@ class ModeratorPage extends StatefulWidget {
 
 class _ModeratorPageState extends State<ModeratorPage> {
   var textfield = TextEditingController();
-  final breakTimeSnackbar = SnackBar(content: Text("다음 버튼을 눌러 휴식을 시작하세요."));
-  final nomoreNextSnackBar = SnackBar(content: Text("더이상 남은 차례가 없습니다."));
+  final breakTimeSnackbar =
+      const SnackBar(content: Text("다음 버튼을 눌러 휴식을 시작하세요."));
+  final nomoreNextSnackBar = const SnackBar(content: Text("더이상 남은 차례가 없습니다."));
   int breakTime = 0;
   @override
   Widget build(BuildContext context) {

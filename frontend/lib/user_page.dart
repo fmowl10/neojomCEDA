@@ -18,6 +18,8 @@ class UserPage extends StatelessWidget {
         body: Center(
           child: Column(children: [
             const StateModelComponent(),
+            if (user.role == state.arguer) const Text("발언하시면 됩니다."),
+            if (user.role == state.defender) const Text("현재, 방어자이십니다."),
             if (context.watch<NeojomCEDAProvider>().isPollEnd)
               ElevatedButton(
                   onPressed: () => Navigator.of(context).push(MaterialPageRoute(

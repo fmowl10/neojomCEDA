@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 var endPoint = dotenv.env['APISERVER'];
@@ -18,3 +19,5 @@ const List<String> debateSelections = [
   "pause",
   "restart",
 ];
+
+const kickedSankBar = SnackBar(content: Text("못들어가는 상태입니다. "));
